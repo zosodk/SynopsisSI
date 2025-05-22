@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{D992C7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynopsisSI.Gateway", "SynopsisSI.Gateway\SynopsisSI.Gateway.csproj", "{EC06558B-560B-4871-B2BF-55CF66A4044E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynopsisSI.Shared.Domain", "SynopsisSI.Shared.Domain\SynopsisSI.Shared.Domain.csproj", "{0541655F-49B5-4902-928B-3BC5FF53BCF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,11 +24,16 @@ Global
 		{62D2D557-219E-4C7F-B33E-32D5CD49A57B} = {6E267614-EFB6-4B00-BA01-493D0AFB272F}
 		{D992C7E4-3BFA-4127-9A57-66B010AB758A} = {6E267614-EFB6-4B00-BA01-493D0AFB272F}
 		{EC06558B-560B-4871-B2BF-55CF66A4044E} = {2E1FA10A-D1AA-4380-AE23-F65E8BBBB2DC}
+		{0541655F-49B5-4902-928B-3BC5FF53BCF4} = {D992C7E4-3BFA-4127-9A57-66B010AB758A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{EC06558B-560B-4871-B2BF-55CF66A4044E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC06558B-560B-4871-B2BF-55CF66A4044E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC06558B-560B-4871-B2BF-55CF66A4044E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC06558B-560B-4871-B2BF-55CF66A4044E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0541655F-49B5-4902-928B-3BC5FF53BCF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0541655F-49B5-4902-928B-3BC5FF53BCF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0541655F-49B5-4902-928B-3BC5FF53BCF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0541655F-49B5-4902-928B-3BC5FF53BCF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
