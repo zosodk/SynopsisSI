@@ -1,8 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6E267614-EFB6-4B00-BA01-493D0AFB272F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C00F75AD-D602-4FE6-A14F-4A3FCB24ABAE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateways", "Gateways", "{2E1FA10A-D1AA-4380-AE23-F65E8BBBB2DC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{62D2D557-219E-4C7F-B33E-32D5CD49A57B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{D992C7E4-3BFA-4127-9A57-66B010AB758A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2E1FA10A-D1AA-4380-AE23-F65E8BBBB2DC} = {6E267614-EFB6-4B00-BA01-493D0AFB272F}
+		{62D2D557-219E-4C7F-B33E-32D5CD49A57B} = {6E267614-EFB6-4B00-BA01-493D0AFB272F}
+		{D992C7E4-3BFA-4127-9A57-66B010AB758A} = {6E267614-EFB6-4B00-BA01-493D0AFB272F}
 	EndGlobalSection
 EndGlobal
