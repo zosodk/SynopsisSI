@@ -1,6 +1,5 @@
 ﻿
-// using SynopsisSI.Shared.Domain.Common;
-// If using a shared MediatR INotification or base event
+using System;
 
 namespace SynopsisSI.Services.ListingService.Domain.Events;
 

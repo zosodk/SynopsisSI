@@ -1,16 +1,10 @@
-﻿using System;
+﻿    using System;
     using System.Collections.Generic;
+    using SynopsisSI.Services.ListingService.Domain.ValueObjects; //Location
 
     namespace SynopsisSI.Services.ListingService.Domain.Entities;
-/*
- *
- * ListingService.Domain could reference SynopsisSI.Shared.Domain for the shared Entity<TId> base class.
- * ListingItem in this service will be a standalone entity or derive from a
- * base entity defined within ListingService.Domain itself if preferred for full service autonomy.
- * Let's proceed without the shared base entity for now to emphasize service independence, but I could adapt it.
- * 
- */
-    public class ListingItem // Could inherit from a local BaseEntity 
+
+    public class ListingItem // Could inherit from a local BaseEntity if you create one here
     {
         public string Id { get; private set; } // Typically a GUID string or MongoDB ObjectId string
         public string SellerId { get; private set; } // ID of the user who owns this listing
@@ -18,7 +12,7 @@
         public string Description { get; private set; }
         public string Category { get; private set; } // Could be an Enum or a Value Object
         public decimal Price { get; private set; }
-        public string Currency { get; private set; } // E.g., "DKK", "EUR"
+        public string Currency { get; private set; } // E.g., "USD", "EUR"
         public string Condition { get; private set; } // E.g., "New", "UsedLikeNew", "UsedGood"
         public Dictionary<string, object> ItemSpecifics { get; private set; }
         public List<string> ImageUrls { get; private set; } // URLs pointing to images in cloud storage
