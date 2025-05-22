@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SynopsisSI.Shared.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+820d01a51554c8316b796b0cab311f4e71849468")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1213cbe96163a0ce50b0c9db1fdc38f00867376")]
 [assembly: System.Reflection.AssemblyProductAttribute("SynopsisSI.Shared.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SynopsisSI.Shared.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ListingService.Application\ListingService.Application.csproj" />
+      <ProjectReference Include="..\ListingService.Domain\ListingService.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

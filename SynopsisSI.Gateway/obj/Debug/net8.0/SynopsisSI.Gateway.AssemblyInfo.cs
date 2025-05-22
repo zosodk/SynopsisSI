@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SynopsisSI.Gateway")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+901ab68b90da4718e717c492b24dd3dce3bd65e3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1213cbe96163a0ce50b0c9db1fdc38f00867376")]
 [assembly: System.Reflection.AssemblyProductAttribute("SynopsisSI.Gateway")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SynopsisSI.Gateway")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
