@@ -1,40 +1,44 @@
-﻿    # Stage 1: Build
-    FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
-    WORKDIR /source
+﻿// Corrected based on physical project structure (src/... paths)
+// and the DLL name confirmed from error logs.
 
-    # Copy solution file (it's at the root of the context)
-    COPY SynopsisSI.sln .
+# Stage 1: Build
+FROM [mcr.microsoft.com/dotnet/sdk:9.0](https://mcr.microsoft.com/dotnet/sdk:9.0) AS build-env
+WORKDIR /source
 
-    # Copy .csproj files, maintaining their physical paths from solution root (including 'src')
-    COPY src/Services/ListingService/ListingService.Domain/ListingService.Domain.csproj ./src/Services/ListingService/ListingService.Domain/
-    COPY src/Services/ListingService/ListingService.Application/ListingService.Application.csproj ./src/Services/ListingService/ListingService.Application/
-    COPY src/Services/ListingService/ListingService.Infrastructure/ListingService.Infrastructure.csproj ./src/Services/ListingService/ListingService.Infrastructure/
-    COPY src/Services/ListingService/ListingService.API/ListingService.API.csproj ./src/Services/ListingService/ListingService.API/
+# Copy solution file (it's at the root of the context)
+COPY SynopsisSI.sln .
 
-    # Copy shared library project files
-    COPY src/Shared/SynopsisSI.Shared.Domain/SynopsisSI.Shared.Domain.csproj ./src/Shared/SynopsisSI.Shared.Domain/
-    COPY src/Shared/SynopsisSI.Shared.Events/SynopsisSI.Shared.Events.csproj ./src/Shared/SynopsisSI.Shared.Events/
-    COPY src/Shared/SynopsisSI.Shared.Infrastructure/SynopsisSI.Shared.Infrastructure.csproj ./src/Shared/SynopsisSI.Shared.Infrastructure/
+# Copy .csproj files, maintaining their physical paths from solution root (including 'src')
+COPY src/Services/ListingService/ListingService.Domain/ListingService.Domain.csproj ./src/Services/ListingService/ListingService.Domain/
+COPY src/Services/ListingService/ListingService.Application/ListingService.Application.csproj ./src/Services/ListingService/ListingService.Application/
+COPY src/Services/ListingService/ListingService.Infrastructure/ListingService.Infrastructure.csproj ./src/Services/ListingService/ListingService.Infrastructure/
+COPY src/Services/ListingService/ListingService.API/ListingService.API.csproj ./src/Services/ListingService/ListingService.API/
 
-    # Copy Gateway .csproj for solution restore
-    COPY src/Gateways/SynopsisSI.Gateway/SynopsisSI.Gateway.csproj ./src/Gateways/SynopsisSI.Gateway/
-    # (Add other service .csproj files here as they are created for the solution restore)
+# Copy shared library project files
+COPY src/Shared/SynopsisSI.Shared.Domain/SynopsisSI.Shared.Domain.csproj ./src/Shared/SynopsisSI.Shared.Domain/
+COPY src/Shared/SynopsisSI.Shared.Events/SynopsisSI.Shared.Events.csproj ./src/Shared/SynopsisSI.Shared.Events/
+COPY src/Shared/SynopsisSI.Shared.Infrastructure/SynopsisSI.Shared.Infrastructure.csproj ./src/Shared/SynopsisSI.Shared.Infrastructure/
 
-    # Restore dependencies for the entire solution
-    RUN dotnet restore SynopsisSI.sln
+# Copy Gateway .csproj for solution restore
+COPY src/Gateways/SynopsisSI.Gateway/SynopsisSI.Gateway.csproj ./src/Gateways/SynopsisSI.Gateway/
+# (Add other service .csproj files here as they are created for the solution restore)
 
-    # Copy the entire source code from the context (solution root) into /source in the image
-    # The .dockerignore file at the solution root will exclude unnecessary files.
-    COPY . .
+# Restore dependencies for the entire solution
+RUN dotnet restore SynopsisSI.sln
 
-    # Set the working directory to the specific API project to be published
-    WORKDIR /source/src/Services/ListingService/ListingService.API
-    RUN dotnet publish -c Release -o /app/publish --no-restore
+# Copy the entire source code from the context (solution root) into /source in the image
+# The .dockerignore file at the solution root will exclude unnecessary files.
+COPY . .
 
-    # Stage 2: Runtime
-    FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-    WORKDIR /app
-    COPY --from=build-env /app/publish .
+# Set the working directory to the specific API project to be published
+WORKDIR /source/src/Services/ListingService/ListingService.API
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
-    EXPOSE 8080
-    ENTRYPOINT ["dotnet", "ListingService.API.dll"]
+# Stage 2: Runtime
+FROM [mcr.microsoft.com/dotnet/aspnet:9.0](https://mcr.microsoft.com/dotnet/aspnet:9.0) AS runtime
+WORKDIR /app
+COPY --from=build-env /app/publish .
+
+EXPOSE 8080
+# Corrected ENTRYPOINT to match the DLL name from the error log
+ENTRYPOINT ["dotnet", "SynopsisSI.Services.ListingService.API.dll"]

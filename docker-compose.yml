@@ -1,8 +1,8 @@
 ﻿services:
   synopsisgateway:
     build:
-      context: . # Solution root
-      dockerfile: src/Gateways/SynopsisSI.Gateway/Dockerfile # Corrected path
+      context: .
+      dockerfile: src/Gateways/SynopsisSI.Gateway/Dockerfile
     container_name: synopsis-gateway
     ports:
       - "8080:8080"
@@ -15,11 +15,11 @@
       listingservice.api:
         condition: service_healthy
     restart: unless-stopped
-  
+
   listingservice.api:
     build:
-      context: . # Solution root
-      dockerfile: src/Services/ListingService/ListingService.API/Dockerfile # Corrected path
+      context: .
+      dockerfile: src/Services/ListingService/ListingService.API/Dockerfile
     container_name: synopsis-listingservice-api
     networks:
       - synopsis-network
@@ -67,7 +67,7 @@
       retries: 5
       start_period: 30s
     restart: unless-stopped
-  
+
   synopsis-redis:
     image: redis:latest
     container_name: synopsis-redis
@@ -84,13 +84,13 @@
       retries: 5
       start_period: 10s
     restart: unless-stopped
-  
+
   synopsis-minio:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: synopsis-minio
     ports:
-      - "9000:9000" # API
-      - "9001:9001" # Console
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minio_password
