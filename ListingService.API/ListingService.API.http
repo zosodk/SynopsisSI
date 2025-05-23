@@ -1,6 +1,0 @@
-@ListingService.API_HostAddress = http://localhost:5236
-
-GET {{ListingService.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
