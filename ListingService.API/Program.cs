@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Logging;
     using Microsoft.EntityFrameworkCore;
     using SynopsisSI.Services.ListingService.Infrastructure.Persistence;
     using SynopsisSI.Services.ListingService.Application.Interfaces.Persistence;
@@ -16,8 +15,9 @@ using Microsoft.AspNetCore.Builder;
     using System;
     using Microsoft.OpenApi.Models;
     using Microsoft.AspNetCore.Http;
-    using Amazon.S3;
-    using Amazon.Extensions.NETCore.Setup;
+    using Amazon.S3; // For IAmazonS3 and AmazonS3Config
+    using Amazon.Extensions.NETCore.Setup; // For AWSOptions
+    // using Amazon.Runtime; // ClientConfig is in AWSSDK.Core, usually brought by AWSSDK.S3
 
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
@@ -54,19 +54,31 @@ using Microsoft.AspNetCore.Builder;
         builder.Services.AddScoped<CreateListingCommandHandler>();
         builder.Services.AddScoped<GetListingByIdQueryHandler>();
 
-        AWSOptions? awsOptions = configuration.GetAWSOptions("CloudStorage");
-        if (awsOptions != null)
+        // Configure AWS S3 client specifically for MinIO
+        var cloudStorageConfig = configuration.GetSection("CloudStorage");
+        var s3ClientConfig = new AmazonS3Config(); // Use the service-specific config
+
+        if (!string.IsNullOrEmpty(cloudStorageConfig["ServiceURL"]))
         {
-            var cloudStorageSection = configuration.GetSection("CloudStorage");
-            if (!string.IsNullOrEmpty(cloudStorageSection["ServiceURL"]))
-                awsOptions.DefaultClientConfig.ServiceURL = cloudStorageSection["ServiceURL"];
-            if (bool.TryParse(cloudStorageSection["ForcePathStyle"], out bool forcePathStyleValue))
-                awsOptions.DefaultClientConfig.ForcePathStyle = forcePathStyleValue;
-            builder.Services.AddDefaultAWSOptions(awsOptions);
-            builder.Services.AddAWSService<IAmazonS3>();
+            s3ClientConfig.ServiceURL = cloudStorageConfig["ServiceURL"];
         }
-        else Log.Warning("CloudStorage (AWS) Options not configured.");
+        if (bool.TryParse(cloudStorageConfig["S3ForcePathStyle"], out bool forcePathStyle))
+        {
+            s3ClientConfig.ForcePathStyle = forcePathStyle;
+        }
+        // If a specific AWS region is set in config and relevant (e.g., for SDK's default behavior if not MinIO)
+        if (!string.IsNullOrEmpty(cloudStorageConfig["Region"]))
+        {
+             s3ClientConfig.RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(cloudStorageConfig["Region"]);
+        }
+
+        // Register IAmazonS3 with the custom configuration for MinIO
+        // AWSCredentials can be picked up from environment/profile by default if not specified here.
+        // For explicit credentials (e.g. from Vault or other config source), you'd pass them to AmazonS3Client constructor.
+        builder.Services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(s3ClientConfig));
+        
         builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
+
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
