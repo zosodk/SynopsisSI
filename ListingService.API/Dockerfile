@@ -1,23 +1,30 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+﻿# Build
+    FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
+    WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["ListingService.API/ListingService.API.csproj", "ListingService.API/"]
-RUN dotnet restore "ListingService.API/ListingService.API.csproj"
-COPY . .
-WORKDIR "/src/ListingService.API"
-RUN dotnet build "./ListingService.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+    COPY ../../../../SynopsisSI.sln ./SynopsisSI.sln
+    COPY ../ListingService.Domain/ListingService.Domain.csproj ./Services/ListingService/ListingService.Domain/
+    COPY ../ListingService.Application/ListingService.Application.csproj ./Services/ListingService/ListingService.Application/
+    COPY ../ListingService.Infrastructure/ListingService.Infrastructure.csproj ./Services/ListingService/ListingService.Infrastructure/
+    COPY ./ListingService.API.csproj ./Services/ListingService/ListingService.API/
+    COPY ../../../../Shared/SynopsisSI.Shared.Domain/SynopsisSI.Shared.Domain.csproj ./Shared/SynopsisSI.Shared.Domain/
+    COPY ../../../../Shared/SynopsisSI.Shared.Events/SynopsisSI.Shared.Events.csproj ./Shared/SynopsisSI.Shared.Events/
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ListingService.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+    RUN dotnet restore SynopsisSI.sln
 
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ListingService.API.dll"]
+    COPY ../../../../Shared/SynopsisSI.Shared.Domain ./Shared/SynopsisSI.Shared.Domain
+    COPY ../../../../Shared/SynopsisSI.Shared.Events ./Shared/SynopsisSI.Shared.Events
+    COPY ../ListingService.Domain ./Services/ListingService/ListingService.Domain
+    COPY ../ListingService.Application ./Services/ListingService/ListingService.Application
+    COPY ../ListingService.Infrastructure ./Services/ListingService/ListingService.Infrastructure
+    COPY . ./Services/ListingService/ListingService.API
+
+    WORKDIR /app/Services/ListingService/ListingService.API
+    RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Runtime
+    FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+    WORKDIR /app
+    COPY --from=build-env /app/publish .
+    EXPOSE 8080
+    ENTRYPOINT ["dotnet", "SynopsisSI.Services.ListingService.API.dll"]
