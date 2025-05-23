@@ -1,5 +1,5 @@
-﻿// Corrected based on the physical project structure (src/... paths)
-// and assuming the assembly name is SynopsisSI.Gateway.dll
+﻿#// Corrected based on the physical project structure (src/... paths)
+#S// and assuming the assembly name is SynopsisSI.Gateway.dll
 
 # Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build

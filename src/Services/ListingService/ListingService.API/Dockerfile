@@ -1,5 +1,5 @@
-﻿// Corrected based on physical project structure (src/... paths)
-// and the DLL name confirmed from error logs.
+﻿#// Corrected based on physical project structure (src/... paths)
+#// and the DLL name confirmed from error logs.
 
 # Stage 1: Build
 FROM [mcr.microsoft.com/dotnet/sdk:9.0](https://mcr.microsoft.com/dotnet/sdk:9.0) AS build-env
