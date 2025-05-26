@@ -9,10 +9,15 @@ COPY ["src/Services/ListingService/ListingService.API/*.csproj", "src/Services/L
 COPY ["src/Services/ListingService/ListingService.Application/*.csproj", "src/Services/ListingService/ListingService.Application/"]
 COPY ["src/Services/ListingService/ListingService.Domain/*.csproj", "src/Services/ListingService/ListingService.Domain/"]
 COPY ["src/Services/ListingService/ListingService.Infrastructure/*.csproj", "src/Services/ListingService/ListingService.Infrastructure/"]
+COPY ["src/Services/OrderService/OrderService.API/*.csproj", "src/Services/OrderService/OrderService.API/"]
+COPY ["src/Services/OrderService/OrderService.Application/*.csproj", "src/Services/OrderService/OrderService.Application/"]
+COPY ["src/Services/OrderService/OrderService.Domain/*.csproj", "src/Services/OrderService/OrderService.Domain/"]
+COPY ["src/Services/OrderService/OrderService.Infrastructure/*.csproj", "src/Services/OrderService/OrderService.Infrastructure/"]
 COPY ["src/Shared/SynopsisSI.Shared.Domain/*.csproj", "src/Shared/SynopsisSI.Shared.Domain/"]
 COPY ["src/Shared/SynopsisSI.Shared.Events/*.csproj", "src/Shared/SynopsisSI.Shared.Events/"]
 COPY ["src/Shared/SynopsisSI.Shared.Infrastructure/*.csproj", "src/Shared/SynopsisSI.Shared.Infrastructure/"]
 COPY ["src/Gateways/SynopsisSI.Gateway/*.csproj", "src/Gateways/SynopsisSI.Gateway/"]
+
 
 # Restore as distinct layers
 RUN dotnet restore "SynopsisSI.sln"
