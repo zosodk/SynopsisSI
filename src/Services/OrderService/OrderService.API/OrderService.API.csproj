@@ -25,4 +25,7 @@
       <ProjectReference Include="..\OrderService.Infrastructure\OrderService.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Shared\SynopsisSI.Shared.Events\SynopsisSI.Shared.Events.csproj" />
+    </ItemGroup>
 </Project>
