@@ -6,107 +6,116 @@
     container_name: synopsis-gateway
     ports:
       - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
     networks:
       - synopsis-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
     depends_on:
       listingservice.api:
         condition: service_healthy
+      orderservice.api:
+        condition: service_healthy
     restart: unless-stopped
-
+  
   listingservice.api:
     build:
       context: .
       dockerfile: src/Services/ListingService/ListingService.API/Dockerfile
     container_name: synopsis-listingservice-api
+    networks:
+      - synopsis-network
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__ListingServiceMongoDb=mongodb://mongoadmin:mongopassword@synopsis-mongodb:27017/
       - MongoDbDatabaseName=SynopsisSI_ListingService_Docker
       - CloudStorage__ServiceURL=http://synopsis-minio:9000
       - CloudStorage__S3BucketName=ecommerce-bucket
-      - CloudStorage__Region=us-east-1
-      - CloudStorage__S3ForcePathStyle=true
+      - MessageBroker__RabbitMQ__Host=synopsis-rabbitmq
+      - MessageBroker__RabbitMQ__Username=user
+      - MessageBroker__RabbitMQ__Password=password
+    depends_on:
+      synopsis-mongodb: { condition: service_healthy }
+      synopsis-minio: { condition: service_healthy }
+      synopsis-rabbitmq: { condition: service_healthy }
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:80/health/listings || exit 1"]
-      interval: 30s
-      timeout: 3s
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health/listings || exit 1"]
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
+    restart: unless-stopped
+  
+  orderservice.api:
+    build:
+      context: .
+      dockerfile: src/Services/OrderService/OrderService.API/Dockerfile
+    container_name: synopsis-orderservice-api
     networks:
       - synopsis-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__OrderServiceMongoDb=mongodb://mongoadmin:mongopassword@synopsis-mongodb:27017/
+      - MongoDbDatabaseName=SynopsisSI_OrderService_Docker
+      - MessageBroker__RabbitMQ__Host=synopsis-rabbitmq
+      - MessageBroker__RabbitMQ__Username=user
+      - MessageBroker__RabbitMQ__Password=password
     depends_on:
-      synopsis-mongodb:
-        condition: service_healthy
-      synopsis-minio:
-        condition: service_healthy
+      synopsis-mongodb: { condition: service_healthy }
+      synopsis-rabbitmq: { condition: service_healthy }
     restart: unless-stopped
-
+  
   synopsis-mongodb:
     image: mongo:latest
     container_name: synopsis-mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongoadmin
-      MONGO_INITDB_ROOT_PASSWORD: mongopassword
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: mongosh --host localhost --port 27017 --eval 'db.runCommand("ping").ok' --quiet
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    networks:
-      - synopsis-network
+    ports: ["27017:27017"]
+    environment: { MONGO_INITDB_ROOT_USERNAME: mongoadmin, MONGO_INITDB_ROOT_PASSWORD: mongopassword }
+    volumes: ["mongo_data:/data/db"]
+    networks: ["synopsis-network"]
+    healthcheck: { test: "mongosh --host localhost --port 27017 --eval 'db.runCommand(\"ping\").ok' --quiet --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD}", interval: 10s, timeout: 5s, retries: 5, start_period: 30s }
     restart: unless-stopped
-
+  
   synopsis-redis:
     image: redis:latest
     container_name: synopsis-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
-    networks:
-      - synopsis-network
+    ports: ["6379:6379"]
+    volumes: ["redis_data:/data"]
+    networks: ["synopsis-network"]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5, start_period: 10s }
     restart: unless-stopped
-
+  
   synopsis-minio:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: synopsis-minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minio_password
-      MINIO_DEFAULT_BUCKETS: ecommerce-bucket
+    ports: ["9000:9000", "9001:9001"]
+    environment: { MINIO_ROOT_USER: minioadmin, MINIO_ROOT_PASSWORD: minio_password, MINIO_DEFAULT_BUCKETS: ecommerce-bucket }
     command: server /data --console-address ":9001"
+    volumes: ["minio_data:/data"]
+    networks: ["synopsis-network"]
+    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live"], interval: 10s, timeout: 5s, retries: 5, start_period: 10s }
+    restart: unless-stopped
+  
+  synopsis-rabbitmq:
+    image: rabbitmq:latest
+    container_name: synopsis-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     volumes:
-      - minio_data:/data
-    healthcheck:
-      test: [ "CMD", "mc", "ready", "local" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
+      - rabbitmq_data:/var/lib/rabbitmq/
     networks:
       - synopsis-network
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
 networks:
@@ -117,3 +126,4 @@ volumes:
   mongo_data:
   redis_data:
   minio_data:
+  rabbitmq_data:
