@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Shared\SynopsisSI.Shared.Domain\SynopsisSI.Shared.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
