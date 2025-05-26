@@ -7,7 +7,6 @@ public class ListingItemDto
 {
     public string Id { get; set; } = string.Empty;
     public string SellerId { get; set; } = string.Empty;
-    // public string SellerUsername { get; set; } // May need to call User service or have this denormalized
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
@@ -16,11 +15,12 @@ public class ListingItemDto
     public string Condition { get; set; } = string.Empty;
     public Dictionary<string, object> ItemSpecifics { get; set; } = new();
     public List<string> ImageUrls { get; set; } = new();
-    public string Status { get; set; } = string.Empty; // From ListingStatus enum
+    public string Status { get; set; } = string.Empty;
     public List<string>? Tags { get; set; }
     public GeoLocationDto? Location { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public int Version { get; set; } // <-- Ensure this property exists
 }
 
 public class GeoLocationDto
