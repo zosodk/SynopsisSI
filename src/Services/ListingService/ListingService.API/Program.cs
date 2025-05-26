@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Builder;
     using SynopsisSI.Services.ListingService.Infrastructure.Persistence.Common;
     using SynopsisSI.Services.ListingService.Application.Features.Listings.Commands.CreateListing;
     using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.GetListingById;
+    using SynopsisSI.Services.ListingService.Application.Features.Listings.Commands.UpdateListing;
+    using SynopsisSI.Services.ListingService.Application.Features.Listings.Commands.DeleteListing;
+    using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.SearchListings;
     using SynopsisSI.Services.ListingService.Application.Interfaces.Infrastructure;
     using SynopsisSI.Services.ListingService.Infrastructure.Services;
     using Serilog;
@@ -53,6 +56,9 @@ using Microsoft.AspNetCore.Builder;
 
         builder.Services.AddScoped<CreateListingCommandHandler>();
         builder.Services.AddScoped<GetListingByIdQueryHandler>();
+        builder.Services.AddScoped<UpdateListingCommandHandler>();
+        builder.Services.AddScoped<DeleteListingCommandHandler>();
+        builder.Services.AddScoped<SearchListingsQueryHandler>();
 
         // Configure AWS S3 client specifically for MinIO
         var cloudStorageConfig = configuration.GetSection("CloudStorage");
@@ -74,7 +80,7 @@ using Microsoft.AspNetCore.Builder;
 
         // Register IAmazonS3 with the custom configuration for MinIO
         // AWSCredentials can be picked up from environment/profile by default if not specified here.
-        // For explicit credentials (e.g. from Vault or other config source), you'd pass them to AmazonS3Client constructor.
+  
         builder.Services.AddSingleton<IAmazonS3>(sp => new AmazonS3Client(s3ClientConfig));
         
         builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
