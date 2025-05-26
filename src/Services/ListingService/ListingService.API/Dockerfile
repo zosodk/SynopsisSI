@@ -1,44 +1,41 @@
-﻿#// Corrected based on physical project structure (src/... paths)
-#// and the DLL name confirmed from error logs.
-
-# Stage 1: Build
-FROM [mcr.microsoft.com/dotnet/sdk:9.0](https://mcr.microsoft.com/dotnet/sdk:9.0) AS build-env
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
-# Copy solution file (it's at the root of the context)
-COPY SynopsisSI.sln .
+# First copy only the solution file
+COPY ["SynopsisSI.sln", "./"]
 
-# Copy .csproj files, maintaining their physical paths from solution root (including 'src')
-COPY src/Services/ListingService/ListingService.Domain/ListingService.Domain.csproj ./src/Services/ListingService/ListingService.Domain/
-COPY src/Services/ListingService/ListingService.Application/ListingService.Application.csproj ./src/Services/ListingService/ListingService.Application/
-COPY src/Services/ListingService/ListingService.Infrastructure/ListingService.Infrastructure.csproj ./src/Services/ListingService/ListingService.Infrastructure/
-COPY src/Services/ListingService/ListingService.API/ListingService.API.csproj ./src/Services/ListingService/ListingService.API/
+# Create necessary directories and copy project files maintaining structure
+COPY ["src/Services/ListingService/ListingService.API/*.csproj", "src/Services/ListingService/ListingService.API/"]
+COPY ["src/Services/ListingService/ListingService.Application/*.csproj", "src/Services/ListingService/ListingService.Application/"]
+COPY ["src/Services/ListingService/ListingService.Domain/*.csproj", "src/Services/ListingService/ListingService.Domain/"]
+COPY ["src/Services/ListingService/ListingService.Infrastructure/*.csproj", "src/Services/ListingService/ListingService.Infrastructure/"]
+COPY ["src/Shared/SynopsisSI.Shared.Domain/*.csproj", "src/Shared/SynopsisSI.Shared.Domain/"]
+COPY ["src/Shared/SynopsisSI.Shared.Events/*.csproj", "src/Shared/SynopsisSI.Shared.Events/"]
+COPY ["src/Shared/SynopsisSI.Shared.Infrastructure/*.csproj", "src/Shared/SynopsisSI.Shared.Infrastructure/"]
+COPY ["src/Gateways/SynopsisSI.Gateway/*.csproj", "src/Gateways/SynopsisSI.Gateway/"]
 
-# Copy shared library project files
-COPY src/Shared/SynopsisSI.Shared.Domain/SynopsisSI.Shared.Domain.csproj ./src/Shared/SynopsisSI.Shared.Domain/
-COPY src/Shared/SynopsisSI.Shared.Events/SynopsisSI.Shared.Events.csproj ./src/Shared/SynopsisSI.Shared.Events/
-COPY src/Shared/SynopsisSI.Shared.Infrastructure/SynopsisSI.Shared.Infrastructure.csproj ./src/Shared/SynopsisSI.Shared.Infrastructure/
+# Restore as distinct layers
+RUN dotnet restore "SynopsisSI.sln"
 
-# Copy Gateway .csproj for solution restore
-COPY src/Gateways/SynopsisSI.Gateway/SynopsisSI.Gateway.csproj ./src/Gateways/SynopsisSI.Gateway/
-# (Add other service .csproj files here as they are created for the solution restore)
-
-# Restore dependencies for the entire solution
-RUN dotnet restore SynopsisSI.sln
-
-# Copy the entire source code from the context (solution root) into /source in the image
-# The .dockerignore file at the solution root will exclude unnecessary files.
+# Copy everything else
 COPY . .
 
-# Set the working directory to the specific API project to be published
-WORKDIR /source/src/Services/ListingService/ListingService.API
+WORKDIR "/source/src/Services/ListingService/ListingService.API"
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
-# Stage 2: Runtime
-FROM [mcr.microsoft.com/dotnet/aspnet:9.0](https://mcr.microsoft.com/dotnet/aspnet:9.0) AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
-COPY --from=build-env /app/publish .
+COPY --from=build /app/publish .
 
-EXPOSE 8080
-# Corrected ENTRYPOINT to match the DLL name from the error log
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/* \
+    && adduser --system --no-create-home --disabled-password --group appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 80
+ENV ASPNETCORE_URLS=http://+:80
+
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD wget -qO- http://localhost:80/health/listings || exit 1
+
 ENTRYPOINT ["dotnet", "SynopsisSI.Services.ListingService.API.dll"]

@@ -1,38 +1,41 @@
-﻿#// Corrected based on the physical project structure (src/... paths)
-#S// and assuming the assembly name is SynopsisSI.Gateway.dll
-
-# Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
-# Copy .sln and ALL .csproj files first, relative to context (solution root), including 'src' prefix
-COPY SynopsisSI.sln .
-COPY src/Gateways/SynopsisSI.Gateway/SynopsisSI.Gateway.csproj ./src/Gateways/SynopsisSI.Gateway/
+# First copy only the solution file
+COPY ["SynopsisSI.sln", "./"]
 
-# Service Projects (needed for solution restore)
-COPY src/Services/ListingService/ListingService.Domain/ListingService.Domain.csproj ./src/Services/ListingService/ListingService.Domain/
-COPY src/Services/ListingService/ListingService.Application/ListingService.Application.csproj ./src/Services/ListingService/ListingService.Application/
-COPY src/Services/ListingService/ListingService.Infrastructure/ListingService.Infrastructure.csproj ./src/Services/ListingService/ListingService.Infrastructure/
-COPY src/Services/ListingService/ListingService.API/ListingService.API.csproj ./src/Services/ListingService/ListingService.API/
-# (Add other service project .csproj files here as they are created)
+# Create necessary directories and copy project files maintaining structure
+COPY ["src/Services/ListingService/ListingService.API/*.csproj", "src/Services/ListingService/ListingService.API/"]
+COPY ["src/Services/ListingService/ListingService.Application/*.csproj", "src/Services/ListingService/ListingService.Application/"]
+COPY ["src/Services/ListingService/ListingService.Domain/*.csproj", "src/Services/ListingService/ListingService.Domain/"]
+COPY ["src/Services/ListingService/ListingService.Infrastructure/*.csproj", "src/Services/ListingService/ListingService.Infrastructure/"]
+COPY ["src/Shared/SynopsisSI.Shared.Domain/*.csproj", "src/Shared/SynopsisSI.Shared.Domain/"]
+COPY ["src/Shared/SynopsisSI.Shared.Events/*.csproj", "src/Shared/SynopsisSI.Shared.Events/"]
+COPY ["src/Shared/SynopsisSI.Shared.Infrastructure/*.csproj", "src/Shared/SynopsisSI.Shared.Infrastructure/"]
+COPY ["src/Gateways/SynopsisSI.Gateway/*.csproj", "src/Gateways/SynopsisSI.Gateway/"]
 
-# Shared Library Projects
-COPY src/Shared/SynopsisSI.Shared.Domain/SynopsisSI.Shared.Domain.csproj ./src/Shared/SynopsisSI.Shared.Domain/
-COPY src/Shared/SynopsisSI.Shared.Events/SynopsisSI.Shared.Events.csproj ./src/Shared/SynopsisSI.Shared.Events/
-COPY src/Shared/SynopsisSI.Shared.Infrastructure/SynopsisSI.Shared.Infrastructure.csproj ./src/Shared/SynopsisSI.Shared.Infrastructure/
+# Restore as distinct layers
+RUN dotnet restore "SynopsisSI.sln"
 
-RUN dotnet restore SynopsisSI.sln
-
-# Copy the rest of the source code from the context (solution root)
+# Copy everything else
 COPY . .
 
-# Set the working directory to the specific API project to be published
-WORKDIR /source/src/Gateways/SynopsisSI.Gateway
-RUN dotnet publish "SynopsisSI.Gateway.csproj" -c Release -o /app/publish --no-restore
+WORKDIR "/source/src/Gateways/SynopsisSI.Gateway"
+RUN dotnet publish -c Release -o /app/publish --no-restore -r linux-x64 --self-contained false
 
-# Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/publish .
+
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/* \
+    && adduser --system --no-create-home --disabled-password --group appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD wget -qO- http://localhost:8080/health || exit 1
+
 ENTRYPOINT ["dotnet", "SynopsisSI.Gateway.dll"]
