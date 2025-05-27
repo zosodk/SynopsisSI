@@ -1,12 +1,13 @@
 ﻿        using SynopsisSI.Services.UserService.Application.Interfaces.Persistence;
         using SynopsisSI.Services.UserService.Domain.Entities;
         using SynopsisSI.Shared.Events;
-        using SynopsisSI.Services.UserService.Application.Interfaces.MessageBus;
+        
         using SynopsisSI.Services.UserService.Application.Interfaces.Infrastructure; 
         using Microsoft.Extensions.Logging;
         using System;
         using System.Threading;
         using System.Threading.Tasks;
+        using SynopsisSI.Services.OrderService.Application.Interfaces.MessageBus;
 
         namespace SynopsisSI.Services.UserService.Application.Features.Users.Commands.RegisterUser;
 
