@@ -137,6 +137,37 @@
     healthcheck: { test: ["CMD", "rabbitmqctl", "status"], interval: 30s, timeout: 10s, retries: 5, start_period: 20s }
     restart: unless-stopped
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: synopsis-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@synopsissi.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_LISTEN_PORT: 80
+    ports: ["5050:80"]
+    volumes: ["pgadmin_data:/var/lib/pgadmin"]
+    networks: ["synopsis-network"]
+    depends_on:
+      synopsis-postgres: { condition: service_healthy }
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: synopsis-mongo-express
+    ports: ["8081:8081"]
+    environment:
+      ME_CONFIG_MONGODB_SERVER: synopsis-mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_MONGODB_AUTH_USERNAME: mongoadmin
+      ME_CONFIG_MONGODB_AUTH_PASSWORD: mongopassword
+      ME_CONFIG_BASICAUTH_USERNAME: mexpressadmin
+      ME_CONFIG_BASICAUTH_PASSWORD: mexpresspassword
+    networks: ["synopsis-network"]
+    depends_on:
+      synopsis-mongodb: { condition: service_healthy }
+    restart: unless-stopped
+
 networks:
   synopsis-network: { driver: bridge }
 
@@ -146,3 +177,4 @@ volumes:
   minio_data:
   rabbitmq_data:
   postgres_data:
+  pgadmin_data:
