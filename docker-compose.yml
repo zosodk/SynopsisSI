@@ -65,7 +65,14 @@
     depends_on:
       synopsis-mongodb: { condition: service_healthy }
       synopsis-rabbitmq: { condition: service_healthy }
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:80/health/orders || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
+  
   
   synopsis-mongodb:
     image: mongo:latest

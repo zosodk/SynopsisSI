@@ -1,5 +1,4 @@
-﻿
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
 # First copy only the solution file
@@ -32,7 +31,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* \
     && adduser --system --no-create-home --disabled-password --group appuser \
     && chown -R appuser:appuser /app
 USER appuser
@@ -40,7 +39,7 @@ USER appuser
 EXPOSE 80
 ENV ASPNETCORE_URLS=http://+:80
 
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD wget -qO- http://localhost:80/health/orders || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=30s \
+    CMD curl -f http://localhost:80/health/orders || exit 1
 
 ENTRYPOINT ["dotnet", "OrderService.API.dll"]
