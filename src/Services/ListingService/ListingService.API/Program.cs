@@ -18,9 +18,11 @@ using Microsoft.AspNetCore.Builder;
     using System;
     using Microsoft.OpenApi.Models;
     using Microsoft.AspNetCore.Http;
-    using Amazon.S3; // For IAmazonS3 and AmazonS3Config
-    using Amazon.Extensions.NETCore.Setup; // For AWSOptions
-    // using Amazon.Runtime; // ClientConfig is in AWSSDK.Core, usually brought by AWSSDK.S3
+    using Amazon.S3; 
+    using Amazon.Extensions.NETCore.Setup; 
+    using MassTransit;
+    using SynopsisSI.Services.ListingService.Application.Features.Listings.EventConsumers;
+
 
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
@@ -85,7 +87,33 @@ using Microsoft.AspNetCore.Builder;
         
         builder.Services.AddSingleton<ICloudStorageService, CloudStorageService>();
 
+        // MassTransit / RabbitMQ Configuration for ListingService (Consumer)
+        builder.Services.AddMassTransit(x =>
+        {
+            x.AddConsumer<OrderPlacedEventConsumer>(); // Register your consumer
 
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                var rabbitMqHost = configuration["MessageBroker:RabbitMQ:Host"] ?? "rabbitmq";
+                var rabbitMqUser = configuration["MessageBroker:RabbitMQ:Username"] ?? "user";
+                var rabbitMqPass = configuration["MessageBroker:RabbitMQ:Password"] ?? "password";
+
+                cfg.Host(rabbitMqHost, "/", h => {
+                    h.Username(rabbitMqUser);
+                    h.Password(rabbitMqPass);
+                });
+
+                // Configure receive endpoint for the consumer
+                cfg.ReceiveEndpoint("listing-service-order-placed-event-consumer", e =>
+                    // cfg.ReceiveEndpoint(KebabCaseEndpointNameFormatter.Instance.Consumer<OrderPlacedEventConsumer>(), e => // Another naming option
+                {
+                    e.ConfigureConsumer<OrderPlacedEventConsumer>(context);
+                    
+                    // e.UseMessageRetry(r => r.Interval(5, TimeSpan.FromSeconds(10)));
+                });
+            });
+        });
+        
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
