@@ -1,4 +1,4 @@
-﻿using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.GetListingById; 
+﻿using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.GetListingById; // For ListingItemDto
 using System.Collections.Generic;
 namespace SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.SearchListings;
 public class PagedListingsResultDto
