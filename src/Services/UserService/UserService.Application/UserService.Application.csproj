@@ -7,7 +7,19 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\Shared\SynopsisSI.Shared.Events\SynopsisSI.Shared.Events.csproj" />
       <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.5" />
+      <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Interfaces\MessageBus\" />
     </ItemGroup>
 
 </Project>
