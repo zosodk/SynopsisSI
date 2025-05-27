@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SynopsisSI.Services.UserService.Domain.ValueObjects;
 
 namespace SynopsisSI.Services.UserService.Domain.Entities;
@@ -17,14 +18,15 @@ public class User
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
-    private User()
+    private User() // For EF Core
     {
-        Id = Guid.NewGuid().ToString(); 
+        Id = Guid.NewGuid().ToString();
         Username = string.Empty;
         Email = string.Empty;
         PasswordHash = string.Empty;
         Roles = new List<string>();
         IsActive = true;
+        CreatedAt = DateTime.UtcNow;
     }
 
     public static User Create(string username, string email, string passwordHash)
@@ -38,19 +40,31 @@ public class User
             Username = username.Trim(),
             Email = email.Trim().ToLowerInvariant(),
             PasswordHash = passwordHash,
-            CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            Roles = new List<string> { "User" }
+            Roles = new List<string> { "User" } // Default role
         };
         return user;
     }
 
     public void UpdateProfile(string? newUsername, string? newProfileImageUrl, AddressVO? newAddress)
     {
-        if (!string.IsNullOrWhiteSpace(newUsername)) Username = newUsername.Trim();
-        ProfileImageUrl = newProfileImageUrl;
-        PrimaryAddress = newAddress;
-        UpdatedAt = DateTime.UtcNow;
+        bool changed = false;
+        if (!string.IsNullOrWhiteSpace(newUsername) && Username != newUsername.Trim())
+        {
+            Username = newUsername.Trim();
+            changed = true;
+        }
+        if (ProfileImageUrl != newProfileImageUrl)
+        {
+            ProfileImageUrl = newProfileImageUrl;
+            changed = true;
+        }
+        if (PrimaryAddress != newAddress)
+        {
+            PrimaryAddress = newAddress;
+            changed = true;
+        }
+        if (changed) UpdatedAt = DateTime.UtcNow;
     }
 
     public void ChangePassword(string newPasswordHash)
@@ -59,22 +73,32 @@ public class User
         PasswordHash = newPasswordHash;
         UpdatedAt = DateTime.UtcNow;
     }
-    
+
     public void AddRole(string role)
     {
         if (string.IsNullOrWhiteSpace(role) || Roles.Contains(role, StringComparer.OrdinalIgnoreCase)) return;
-        Roles.Add(role);
+        Roles.Add(role.Trim());
         UpdatedAt = DateTime.UtcNow;
     }
 
     public void RemoveRole(string role)
     {
         if (string.IsNullOrWhiteSpace(role)) return;
-        Roles.RemoveAll(r => r.Equals(role, StringComparison.OrdinalIgnoreCase));
-        UpdatedAt = DateTime.UtcNow;
+        var trimmedRole = role.Trim();
+        var removedCount = Roles.RemoveAll(r => string.Equals(r, trimmedRole, StringComparison.OrdinalIgnoreCase));
+        if (removedCount > 0) UpdatedAt = DateTime.UtcNow;
     }
 
-
-    public void Activate() { IsActive = true; UpdatedAt = DateTime.UtcNow; }
-    public void Deactivate() { IsActive = false; UpdatedAt = DateTime.UtcNow; }
+    public void Activate() 
+    { 
+        if (IsActive) return;
+        IsActive = true; 
+        UpdatedAt = DateTime.UtcNow; 
+    }
+    public void Deactivate() 
+    { 
+        if (!IsActive) return;
+        IsActive = false; 
+        UpdatedAt = DateTime.UtcNow; 
+    }
 }

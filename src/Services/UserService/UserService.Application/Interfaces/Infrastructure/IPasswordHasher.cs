@@ -1,5 +1,4 @@
 ﻿namespace SynopsisSI.Services.UserService.Application.Interfaces.Infrastructure;
-
 public interface IPasswordHasher
 {
     string HashPassword(string password);

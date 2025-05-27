@@ -1,13 +1,15 @@
-﻿namespace SynopsisSI.Services.UserService.Domain.ValueObjects;
+﻿using System.Collections.Generic;
+using System.Linq;
 
+namespace SynopsisSI.Services.UserService.Domain.ValueObjects;
 public abstract class ValueObject
 {
-    protected static bool EqualOperator(ValueObject left, ValueObject right)
+    protected static bool EqualOperator(ValueObject? left, ValueObject? right)
     {
         if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null)) return false;
         return ReferenceEquals(left, null) || left.Equals(right);
     }
-    protected static bool NotEqualOperator(ValueObject left, ValueObject right) => !EqualOperator(left, right);
+    protected static bool NotEqualOperator(ValueObject? left, ValueObject? right) => !EqualOperator(left, right);
     protected abstract IEnumerable<object> GetEqualityComponents();
     public override bool Equals(object? obj)
     {
@@ -15,5 +17,9 @@ public abstract class ValueObject
         var other = (ValueObject)obj;
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
-    public override int GetHashCode() => GetEqualityComponents().Select(x => x != null ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
+    public override int GetHashCode() => 
+        GetEqualityComponents().Select(x => x != null ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
+
+    public static bool operator ==(ValueObject? one, ValueObject? two) => EqualOperator(one, two);
+    public static bool operator !=(ValueObject? one, ValueObject? two) => NotEqualOperator(one, two);
 }

@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq; // For SequenceEqual
-using System; // For ArgumentNullException
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SynopsisSI.Services.UserService.Domain.ValueObjects;
 
-public class AddressVO : ValueObject // Requires ValueObject base class
+public class AddressVO : ValueObject
 {
     public string Street { get; private set; }
     public string City { get; private set; }
     public string PostalCode { get; private set; }
     public string Country { get; private set; }
 
-    private AddressVO() { Street = City = PostalCode = Country = string.Empty; } // For EF Core
+    private AddressVO() { Street = City = PostalCode = Country = string.Empty; } 
 
     public static AddressVO Create(string street, string city, string postalCode, string country)
     {

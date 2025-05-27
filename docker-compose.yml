@@ -1,30 +1,20 @@
 ﻿services:
   synopsisgateway:
-    build:
-      context: .
-      dockerfile: src/Gateways/SynopsisSI.Gateway/Dockerfile
+    build: { context: ., dockerfile: src/Gateways/SynopsisSI.Gateway/Dockerfile }
     container_name: synopsis-gateway
-    ports:
-      - "8080:8080"
-    networks:
-      - synopsis-network
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
+    ports: ["8080:8080"]
+    networks: ["synopsis-network"]
+    environment: { ASPNETCORE_ENVIRONMENT: Development, ASPNETCORE_URLS: "http://+:8080" }
     depends_on:
-      listingservice.api:
-        condition: service_healthy
-      orderservice.api:
-        condition: service_healthy
+      listingservice.api: { condition: service_healthy }
+      orderservice.api: { condition: service_healthy }
+      userservice.api: { condition: service_healthy }
     restart: unless-stopped
-  
+
   listingservice.api:
-    build:
-      context: .
-      dockerfile: src/Services/ListingService/ListingService.API/Dockerfile
+    build: { context: ., dockerfile: src/Services/ListingService/ListingService.API/Dockerfile }
     container_name: synopsis-listingservice-api
-    networks:
-      - synopsis-network
+    networks: ["synopsis-network"]
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
@@ -35,25 +25,20 @@
       - MessageBroker__RabbitMQ__Host=synopsis-rabbitmq
       - MessageBroker__RabbitMQ__Username=user
       - MessageBroker__RabbitMQ__Password=password
+      - JwtSettings__Issuer=SynopsisSI.UserService
+      - JwtSettings__Audience=SynopsisSI.PlatformClients
+      - JwtSettings__SecretKey=REPLACE_THIS_WITH_A_VERY_STRONG_AND_LONG_SECRET_KEY_AT_LEAST_32_BYTES_LONG_AND_STORE_SECURELY # Must match key used by UserService/AuthService
     depends_on:
       synopsis-mongodb: { condition: service_healthy }
       synopsis-minio: { condition: service_healthy }
       synopsis-rabbitmq: { condition: service_healthy }
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80/health/listings || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:80/health/listings || exit 1"], interval: 15s, timeout: 5s, retries: 3, start_period: 30s }
     restart: unless-stopped
-  
+
   orderservice.api:
-    build:
-      context: .
-      dockerfile: src/Services/OrderService/OrderService.API/Dockerfile
+    build: { context: ., dockerfile: src/Services/OrderService/OrderService.API/Dockerfile }
     container_name: synopsis-orderservice-api
-    networks:
-      - synopsis-network
+    networks: ["synopsis-network"]
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
@@ -62,18 +47,56 @@
       - MessageBroker__RabbitMQ__Host=synopsis-rabbitmq
       - MessageBroker__RabbitMQ__Username=user
       - MessageBroker__RabbitMQ__Password=password
+      - JwtSettings__Issuer=SynopsisSI.UserService
+      - JwtSettings__Audience=SynopsisSI.PlatformClients
+      - JwtSettings__SecretKey=REPLACE_THIS_WITH_A_VERY_STRONG_AND_LONG_SECRET_KEY_AT_LEAST_32_BYTES_LONG_AND_STORE_SECURELY
     depends_on:
       synopsis-mongodb: { condition: service_healthy }
       synopsis-rabbitmq: { condition: service_healthy }
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:80/health/orders || exit 1" ]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:80/health/orders || exit 1"], interval: 15s, timeout: 5s, retries: 3, start_period: 30s }
     restart: unless-stopped
-  
-  
+
+  userservice.api:
+    build:
+      context: .
+      dockerfile: src/Services/UserService/UserService.API/Dockerfile
+    container_name: synopsis-userservice-api
+    networks: ["synopsis-network"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__UserServicePostgresDb=Host=synopsis-postgres;Port=5432;Database=synopsis_user_db;Username=useradmin;Password=userpassword
+      - MessageBroker__RabbitMQ__Host=synopsis-rabbitmq
+      - MessageBroker__RabbitMQ__Username=user
+      - MessageBroker__RabbitMQ__Password=password
+      - JwtSettings__SecretKey=REPLACE_THIS_WITH_A_VERY_STRONG_AND_LONG_SECRET_KEY_AT_LEAST_32_BYTES_LONG_AND_STORE_SECURELY
+      - JwtSettings__Issuer=SynopsisSI.UserService
+      - JwtSettings__Audience=SynopsisSI.PlatformClients
+      - JwtSettings__ExpiryMinutes=60
+    depends_on:
+      synopsis-postgres: { condition: service_healthy }
+      synopsis-rabbitmq: { condition: service_healthy }
+    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:80/health/users || exit 1"], interval: 15s, timeout: 5s, retries: 3, start_period: 30s }
+    restart: unless-stopped
+
+  synopsis-postgres:
+    image: postgres:16-alpine
+    container_name: synopsis-postgres
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: useradmin
+      POSTGRES_PASSWORD: userpassword
+      POSTGRES_DB: synopsis_user_db
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    networks: ["synopsis-network"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -q"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
   synopsis-mongodb:
     image: mongo:latest
     container_name: synopsis-mongodb
@@ -83,7 +106,7 @@
     networks: ["synopsis-network"]
     healthcheck: { test: "mongosh --host localhost --port 27017 --eval 'db.runCommand(\"ping\").ok' --quiet --username $${MONGO_INITDB_ROOT_USERNAME} --password $${MONGO_INITDB_ROOT_PASSWORD}", interval: 10s, timeout: 5s, retries: 5, start_period: 30s }
     restart: unless-stopped
-  
+
   synopsis-redis:
     image: redis:latest
     container_name: synopsis-redis
@@ -92,7 +115,7 @@
     networks: ["synopsis-network"]
     healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5, start_period: 10s }
     restart: unless-stopped
-  
+
   synopsis-minio:
     image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: synopsis-minio
@@ -103,34 +126,23 @@
     networks: ["synopsis-network"]
     healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live"], interval: 10s, timeout: 5s, retries: 5, start_period: 10s }
     restart: unless-stopped
-  
+
   synopsis-rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:3.13-management-alpine
     container_name: synopsis-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq/
-    networks:
-      - synopsis-network
-    environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
+    ports: ["5672:5672", "15672:15672"]
+    volumes: ["rabbitmq_data:/var/lib/rabbitmq/"]
+    networks: ["synopsis-network"]
+    environment: { RABBITMQ_DEFAULT_USER: user, RABBITMQ_DEFAULT_PASS: password }
+    healthcheck: { test: ["CMD", "rabbitmqctl", "status"], interval: 30s, timeout: 10s, retries: 5, start_period: 20s }
     restart: unless-stopped
 
 networks:
-  synopsis-network:
-    driver: bridge
+  synopsis-network: { driver: bridge }
 
 volumes:
   mongo_data:
   redis_data:
   minio_data:
   rabbitmq_data:
+  postgres_data:

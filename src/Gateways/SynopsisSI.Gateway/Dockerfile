@@ -17,6 +17,11 @@ COPY ["src/Shared/SynopsisSI.Shared.Domain/*.csproj", "src/Shared/SynopsisSI.Sha
 COPY ["src/Shared/SynopsisSI.Shared.Events/*.csproj", "src/Shared/SynopsisSI.Shared.Events/"]
 COPY ["src/Shared/SynopsisSI.Shared.Infrastructure/*.csproj", "src/Shared/SynopsisSI.Shared.Infrastructure/"]
 COPY ["src/Gateways/SynopsisSI.Gateway/*.csproj", "src/Gateways/SynopsisSI.Gateway/"]
+# UserService specific projects
+COPY src/Services/UserService/UserService.Domain/UserService.Domain.csproj ./src/Services/UserService/UserService.Domain/
+COPY src/Services/UserService/UserService.Application/UserService.Application.csproj ./src/Services/UserService/UserService.Application/
+COPY src/Services/UserService/UserService.Infrastructure/UserService.Infrastructure.csproj ./src/Services/UserService/UserService.Infrastructure/
+COPY src/Services/UserService/UserService.API/UserService.API.csproj ./src/Services/UserService/UserService.API/
 
 # Restore as distinct layers
 RUN dotnet restore "SynopsisSI.sln"
