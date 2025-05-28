@@ -4,6 +4,8 @@ Welcome to SynopsisSI, a modern, highly scalable e-commerce platform designed fo
 
 This project serves as a practical case study for applying advanced software architecture principles and is intended to provide concrete assignments for academic coursework in "System Integration," "Databases for Developers,", but also work as a demonstration platform for the exam of "Distributed Large Systems."
 
+The Documents submitted for the exam are located in the documentation folder in the root of this repository.
+
 ## Solution Overview
 
 SynopsisSI is architected as a collection of **independent, focused microservices** that collaborate to deliver a comprehensive e-commerce experience. This design offers significant advantages:
