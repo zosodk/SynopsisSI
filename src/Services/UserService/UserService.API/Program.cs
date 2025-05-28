@@ -9,11 +9,12 @@ using SynopsisSI.Services.UserService.Infrastructure.Persistence.Repositories;
 using SynopsisSI.Services.UserService.Infrastructure.Persistence.Common;
 using SynopsisSI.Services.UserService.Application.Features.Users.Commands.RegisterUser;
 using SynopsisSI.Services.UserService.Application.Features.Auth.Commands.LoginUser;
-using SynopsisSI.Services.UserService.Application.Interfaces.Infrastructure;
-using SynopsisSI.Services.UserService.Infrastructure.Auth;
-using SynopsisSI.Services.UserService.Infrastructure.Security;
+using SynopsisSI.Services.UserService.Application.Interfaces.Infrastructure; 
+using SynopsisSI.Services.UserService.Infrastructure.Auth; 
+using SynopsisSI.Services.UserService.Infrastructure.Security; 
 using SynopsisSI.Services.UserService.Application.Interfaces.MessageBus;
 using SynopsisSI.Services.UserService.Infrastructure.EventBus;
+using SynopsisSI.Services.UserService.Application.Features.Users.Queries.GetUserById; // Added
 using Serilog;
 using System;
 using Microsoft.OpenApi.Models;
@@ -42,6 +43,8 @@ try
     builder.Services.AddScoped<IUserRepository, EfCoreUserRepository>();
     builder.Services.AddScoped<RegisterUserCommandHandler>();
     builder.Services.AddScoped<LoginUserCommandHandler>();
+    builder.Services.AddScoped<GetUserByIdQueryHandler>(); // Added registration
+
     builder.Services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
     builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 

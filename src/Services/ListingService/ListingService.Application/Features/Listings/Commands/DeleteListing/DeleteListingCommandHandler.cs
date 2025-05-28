@@ -24,7 +24,7 @@
                 if (listingItem == null)
                 {
                     _logger.LogWarning("Listing not found for deletion. ListingId: {ListingId}", request.Id);
-                    return false;
+                    return false; // Or throw NotFoundException
                 }
 
                 if (listingItem.SellerId != request.SellerId)
@@ -33,11 +33,13 @@
                     throw new UnauthorizedAccessException("User is not authorized to delete this listing.");
                 }
 
-                listingItem.Delist();
+                listingItem.Delist(); // Soft delete by changing status
                 await _unitOfWork.Listings.UpdateAsync(listingItem, cancellationToken);
+                // If hard delete: await _unitOfWork.Listings.DeleteAsync(listingItem, cancellationToken);
                 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation("Listing marked as delisted successfully. ListingId: {ListingId}", request.Id);
+                // TODO: Publish ListingDelistedEvent
                 return true;
             }
         }

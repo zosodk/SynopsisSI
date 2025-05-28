@@ -6,7 +6,7 @@
         using System.Linq;
         using System.Threading;
         using System.Threading.Tasks;
-        using Microsoft.EntityFrameworkCore; // For DbUpdateConcurrencyException
+        using Microsoft.EntityFrameworkCore;
         using System.Collections.Generic;
 
         namespace SynopsisSI.Services.ListingService.Application.Features.Listings.Commands.UpdateListing;
@@ -65,7 +65,7 @@
                     request.Condition, request.ItemSpecifics, request.Tags, location
                 );
                 
-                if (request.ImageObjectKeys != null)
+                if (request.ImageObjectKeys != null) // Allows clearing images by sending empty list
                 {
                     listingItem.UpdateImageUrls(imageUrls ?? new List<string>());
                 }
@@ -76,6 +76,7 @@
                 {
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
                     _logger.LogInformation("Listing updated successfully. ListingId: {ListingId}", request.Id);
+                    // TODO: Publish ListingUpdatedEvent
                     return true;
                 }
                 catch (DbUpdateConcurrencyException ex) 

@@ -1,5 +1,5 @@
 ﻿        using SynopsisSI.Services.ListingService.Application.Interfaces.Persistence;
-        using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.GetListingById; 
+        using SynopsisSI.Services.ListingService.Application.Features.Listings.Queries.GetListingById;
         using SynopsisSI.Services.ListingService.Domain.Entities;
         using Microsoft.Extensions.Logging;
         using System;
@@ -57,9 +57,15 @@
                 int skip = (request.PageNumber - 1) * request.PageSize;
                 int take = request.PageSize;
 
-                var allMatchingListingsForCount = await _listingRepository.FindAsync(predicate, 0, int.MaxValue, cancellationToken);
+                // For production, implement proper counting in repository or use a search engine.
+                var allMatchingListingsForCount = await _listingRepository.FindAsync(predicate, 0, int.MaxValue, cancellationToken); 
                 var totalCount = allMatchingListingsForCount.Count;
-                var listings = await _listingRepository.FindAsync(predicate, skip, take, cancellationToken);
+                
+                // Add sorting logic here based on request.SortBy before pagination
+                // Eksempelvis: if (request.SortBy == "price_asc") allMatchingListingsForCount = allMatchingListingsForCount.OrderBy(l => l.Price).ToList();
+                
+                var listings = allMatchingListingsForCount.Skip(skip).Take(take).ToList();
+
 
                 var listingDtos = listings.Select(l => new ListingItemDto 
                 {
@@ -68,7 +74,7 @@
                     ItemSpecifics = l.ItemSpecifics, ImageUrls = l.ImageUrls, Status = l.Status.ToString(),
                     Tags = l.Tags,
                     Location = l.Location != null ? new GeoLocationDto { Longitude = l.Location.Longitude, Latitude = l.Location.Latitude } : null,
-                    CreatedAt = l.CreatedAt, UpdatedAt = l.UpdatedAt, Version = l.Version 
+                    CreatedAt = l.CreatedAt, UpdatedAt = l.UpdatedAt, Version = l.Version
                 }).ToList();
 
                 var result = new PagedListingsResultDto
@@ -87,18 +93,9 @@
         public static class PredicateBuilder
         {
             public static Expression<Func<T, bool>> True<T>() { return f => true; }
-            public static Expression<Func<T, bool>> False<T>() { return f => false; }
-
-            public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> expr1, Expression<Func<T, bool>> expr2)
-            {
-                var invokedExpr = Expression.Invoke(expr2, expr1.Parameters.Cast<Expression>());
-                return Expression.Lambda<Func<T, bool>>(Expression.OrElse(expr1.Body, invokedExpr), expr1.Parameters);
-            }
-
             public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> expr1, Expression<Func<T, bool>> expr2)
             {
                 var invokedExpr = Expression.Invoke(expr2, expr1.Parameters.Cast<Expression>());
                 return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(expr1.Body, invokedExpr), expr1.Parameters);
             }
         }
- 

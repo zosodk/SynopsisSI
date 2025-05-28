@@ -20,7 +20,7 @@ public class ListingItemDto
     public GeoLocationDto? Location { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public int Version { get; set; } // <-- Ensure this property exists
+    public int Version { get; set; } // Ensure this is present
 }
 
 public class GeoLocationDto

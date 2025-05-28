@@ -12,5 +12,5 @@ public class SearchListingsQuery
     public double? RadiusKm { get; set; }
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
-    public string? SortBy { get; set; }
+    public string? SortBy { get; set; } // e.g., "price_asc", "date_desc"
 }
