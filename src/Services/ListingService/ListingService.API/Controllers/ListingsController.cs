@@ -13,6 +13,7 @@
     using Microsoft.EntityFrameworkCore;
     using System.ComponentModel.DataAnnotations;
     using Microsoft.AspNetCore.Authorization; // Added for [Authorize]
+    //using Microsoft.FeatureManagement; //Added for 09 FeatureFlags
 
     namespace SynopsisSI.Services.ListingService.API.Controllers;
 
@@ -64,6 +65,12 @@
                 var listingId = await _createListingHandler.Handle(command, cancellationToken);
                 return CreatedAtAction(nameof(GetListingById), new { id = listingId }, new { id = listingId });
             }
+            // if (await _featureManager.IsEnabledAsync("PremiumListings")) {
+            //     // Execute premium listing logic
+            // } else {
+            // Execute standard listing logic
+            // }
+
             catch (ArgumentException ex) { _logger.LogWarning(ex, "ArgEx creating listing."); return BadRequest(new { error = ex.Message }); }
             catch (ApplicationException ex) { _logger.LogWarning(ex, "AppEx creating listing."); return BadRequest(new { error = ex.Message }); }
             catch (Exception ex) { _logger.LogError(ex, "Error creating listing."); return StatusCode(StatusCodes.Status500InternalServerError, "Error creating listing."); }
