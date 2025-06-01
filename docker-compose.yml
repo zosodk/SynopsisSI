@@ -13,7 +13,7 @@
 
   listingservice.api:
     build: { context: ., dockerfile: src/Services/ListingService/ListingService.API/Dockerfile }
-    container_name: synopsis-listingservice-api
+    #container_name: synopsis-listingservice-api
     networks: ["synopsis-network"]
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
