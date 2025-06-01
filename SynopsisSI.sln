@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.API", "src\Services\UserService\UserService.API\UserService.API.csproj", "{B00CAED9-CE52-4DCF-9A01-0FFA00636C83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PasswordHasher", "PasswordHasher\PasswordHasher.csproj", "{31F03B82-4AEE-4A45-BDB8-DAA363A72F72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +78,7 @@ Global
 		{CEBEE91D-FD45-4398-884E-44B49ADFBB4C} = {F312FBF9-1E4C-49B7-84E5-8B59B07D71B9}
 		{B0E1DBD8-77E1-4445-BD68-0B927C252596} = {F312FBF9-1E4C-49B7-84E5-8B59B07D71B9}
 		{B00CAED9-CE52-4DCF-9A01-0FFA00636C83} = {F312FBF9-1E4C-49B7-84E5-8B59B07D71B9}
+		{31F03B82-4AEE-4A45-BDB8-DAA363A72F72} = {C00F75AD-D602-4FE6-A14F-4A3FCB24ABAE}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4BF7A74A-E900-4C6A-9ED3-A21D1F8F2E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -142,5 +145,9 @@ Global
 		{B00CAED9-CE52-4DCF-9A01-0FFA00636C83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B00CAED9-CE52-4DCF-9A01-0FFA00636C83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B00CAED9-CE52-4DCF-9A01-0FFA00636C83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31F03B82-4AEE-4A45-BDB8-DAA363A72F72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31F03B82-4AEE-4A45-BDB8-DAA363A72F72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31F03B82-4AEE-4A45-BDB8-DAA363A72F72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31F03B82-4AEE-4A45-BDB8-DAA363A72F72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
